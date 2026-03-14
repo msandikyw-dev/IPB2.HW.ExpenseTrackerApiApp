@@ -1,5 +1,6 @@
 using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
 using IPB2.HW.ExpenseTrackerApiApp.Models;
+using IPB2.HW.ExpenseTrackerApiApp.Models.Expense;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -132,39 +133,4 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
     }
 }
 
-public class ExpenseCreateRequestDTO
-{
-    public DateTime ExpenseDate { get; set; }
 
-    public decimal Amount { get; set; }
-
-    public int CategoryId { get; set; }
-
-    public string? Description { get; set; }
-}
-
-public class ExpenseUpdateRequestDTO
-{
-    public DateTime ExpenseDate { get; set; }
-
-    public decimal Amount { get; set; }
-
-    public int CategoryId { get; set; }
-
-    public string? Description { get; set; }
-}
-
-public class ExpenseResponseDTO
-{
-    public int ExpenseId { get; set; }
-
-    public DateTime ExpenseDate { get; set; }
-
-    public decimal Amount { get; set; }
-
-    public int CategoryId { get; set; }
-
-    public string? CategoryName { get; set; }
-
-    public string? Description { get; set; }
-}

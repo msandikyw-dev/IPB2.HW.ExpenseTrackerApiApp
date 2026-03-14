@@ -1,5 +1,6 @@
 using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
 using IPB2.HW.ExpenseTrackerApiApp.Models;
+using IPB2.HW.ExpenseTrackerApiApp.Models.Budget;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -133,43 +134,4 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
     }
 }
 
-public class BudgetCreateRequestDTO
-{
-    public int BudgetYear { get; set; }
 
-    public int BudgetMonth { get; set; }
-
-    public decimal BudgetAmount { get; set; }
-}
-
-public class BudgetUpdateRequestDTO
-{
-    public int BudgetYear { get; set; }
-
-    public int BudgetMonth { get; set; }
-
-    public decimal BudgetAmount { get; set; }
-}
-
-public class BudgetResponseDTO
-{
-    public int BudgetId { get; set; }
-    public int BudgetYear { get; set; }
-
-    public int BudgetMonth { get; set; }
-
-    public decimal BudgetAmount { get; set; }
-}
-
-public class BudgetRemainingResponseDTO
-{
-    public int BudgetYear { get; set; }
-
-    public int BudgetMonth { get; set; }
-
-    public decimal BudgetAmount { get; set; }
-
-    public decimal TotalExpense { get; set; }
-
-    public decimal RemainingBudget { get; set; }
-}

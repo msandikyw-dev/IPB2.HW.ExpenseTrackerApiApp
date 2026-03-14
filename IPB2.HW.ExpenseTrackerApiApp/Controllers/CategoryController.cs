@@ -1,5 +1,6 @@
 using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
 using IPB2.HW.ExpenseTrackerApiApp.Models;
+using IPB2.HW.ExpenseTrackerApiApp.Models.Category;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -104,25 +105,4 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
     }
 }
 
-public class CategoryCreateRequestDTO
-{
-    public string CategoryName { get; set; }
 
-    public string? Description { get; set; }
-}
-
-public class CategoryUpdateRequestDTO
-{
-    public string CategoryName { get; set; }
-
-    public string? Description { get; set; }
-}
-
-public class CategoryResponseDTO
-{
-    public int CategoryId { get; set; }
-
-    public string CategoryName { get; set; }
-
-    public string? Description { get; set; }
-}
