@@ -16,6 +16,7 @@
 </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IPB2.HW.ExpenseTrackerApiApp.Database\IPB2.HW.ExpenseTrackerApiApp.Database.csproj" />
+    <ProjectReference Include="..\IPB2.HW.ExpenseTrackerApiApp\IPB2.HW.ExpenseTrackerApiApp.csproj" />
   </ItemGroup>
 
 </Project>
