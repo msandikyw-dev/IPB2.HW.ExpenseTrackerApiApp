@@ -1,0 +1,6 @@
+@IPB2.HW.ExpenseTrackerMinimalApi2App_HostAddress = http://localhost:5146
+
+GET {{IPB2.HW.ExpenseTrackerMinimalApi2App_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

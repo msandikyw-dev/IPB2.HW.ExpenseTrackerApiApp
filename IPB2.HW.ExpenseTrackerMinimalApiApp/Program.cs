@@ -112,7 +112,7 @@ var result = new BudgetRemainingDTO
 .WithOpenApi();
 
 
-app.MapPut("/api/Category/Update/{id}", async (int id, CategoryUpdateModel model, AppDbContext db) =>
+app.MapPut("/api/Category/Update/{id}", async (int id, CategoryUpdateDTO model, AppDbContext db) =>
 {
     var category = await db.TblCategories
         .FirstOrDefaultAsync(x => x.CategoryId == id && !x.IsDelete);
