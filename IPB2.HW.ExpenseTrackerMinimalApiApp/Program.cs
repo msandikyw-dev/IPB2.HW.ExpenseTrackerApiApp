@@ -1,4 +1,7 @@
-﻿using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Models.Budget;
+using IPB2.HW.ExpenseTrackerApiApp.Models.Category;
+using IPB2.HW.ExpenseTrackerApiApp.Models.Expense;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +22,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Budget Module
-app.MapPost("/api/Budget/CreateBudget", async (BudgetCreateDTO model, AppDbContext db) =>
+app.MapPost("/api/Budget/CreateBudget", async (BudgetCreateRequestDTO model, AppDbContext db) =>
 {
 var exists = await db.TblBudgets
     .AnyAsync(x => x.BudgetYear == model.BudgetYear &&
@@ -45,7 +48,7 @@ return Results.Ok(budget);
 .WithName("CreateBudget")
 .WithOpenApi();
 
-app.MapPut("/api/Budget/UpdateBudget/{id}", async (int id, BudgetUpdateDTO model, AppDbContext db) =>
+app.MapPut("/api/Budget/UpdateBudget/{id}", async (int id, BudgetUpdateRequestDTO model, AppDbContext db) =>
 {
 var budget = await db.TblBudgets
     .FirstOrDefaultAsync(x => x.BudgetId == id && !x.IsDelete);
@@ -98,7 +101,7 @@ var totalExpense = await db.TblExpenses
 
 var remaining = budget.BudgetAmount - totalExpense;
 
-var result = new BudgetRemainingDTO
+var result = new BudgetRemainingResponseDTO
 {
     BudgetYear = year,
     BudgetMonth = month,
@@ -112,7 +115,7 @@ var result = new BudgetRemainingDTO
 .WithOpenApi();
 
 
-app.MapPut("/api/Category/Update/{id}", async (int id, CategoryUpdateDTO model, AppDbContext db) =>
+app.MapPut("/api/Category/Update/{id}", async (int id, CategoryUpdateRequestDTO model, AppDbContext db) =>
 {
     var category = await db.TblCategories
         .FirstOrDefaultAsync(x => x.CategoryId == id && !x.IsDelete);
@@ -125,7 +128,7 @@ app.MapPut("/api/Category/Update/{id}", async (int id, CategoryUpdateDTO model, 
 
     await db.SaveChangesAsync();
 
-    var result = new CategoryDTO
+    var result = new CategoryResponseDTO
     {
         CategoryId = category.CategoryId,
         CategoryName = category.CategoryName,
@@ -157,7 +160,7 @@ app.MapGet("/api/Category/List", async (AppDbContext db) =>
 {
     var categories = await db.TblCategories
         .Where(x => !x.IsDelete)
-        .Select(x => new CategoryDTO
+        .Select(x => new CategoryResponseDTO
         {
             CategoryId = x.CategoryId,
             CategoryName = x.CategoryName,
@@ -171,7 +174,7 @@ app.MapGet("/api/Category/List", async (AppDbContext db) =>
 .WithOpenApi();
 
 // Expense
-app.MapPost("/api/Expense/Create", async (ExpenseCreateDTO model, AppDbContext db) =>
+app.MapPost("/api/Expense/Create", async (ExpenseCreateRequestDTO model, AppDbContext db) =>
 {
     var expense = new TblExpense
     {
@@ -185,7 +188,7 @@ app.MapPost("/api/Expense/Create", async (ExpenseCreateDTO model, AppDbContext d
     db.TblExpenses.Add(expense);
     await db.SaveChangesAsync();
 
-    var result = new ExpenseDTO
+    var result = new ExpenseResponseDTO
     {
         ExpenseId = expense.ExpenseId,
         ExpenseDate = expense.ExpenseDate,
@@ -200,7 +203,7 @@ app.MapPost("/api/Expense/Create", async (ExpenseCreateDTO model, AppDbContext d
 .WithName("CreateExpense")
 .WithOpenApi();
 
-app.MapPut("/api/Expense/Update/{id}", async (int id, ExpenseUpdateDTO model, AppDbContext db) =>
+app.MapPut("/api/Expense/Update/{id}", async (int id, ExpenseUpdateRequestDTO model, AppDbContext db) =>
 {
     var expense = await db.TblExpenses.FirstOrDefaultAsync(x => x.ExpenseId == id && !x.IsDelete);
     if (expense == null) return Results.NotFound("Expense not found.");
@@ -233,7 +236,7 @@ app.MapGet("/api/Expense/List", async (AppDbContext db) =>
     var expenses = await db.TblExpenses
         .Include(x => x.Category)
         .Where(x => !x.IsDelete)
-        .Select(x => new ExpenseDTO
+        .Select(x => new ExpenseResponseDTO
         {
             ExpenseId = x.ExpenseId,
             ExpenseDate = x.ExpenseDate,
@@ -254,7 +257,7 @@ app.MapGet("/api/Expense/Details/{id}", async (int id, AppDbContext db) =>
     var expense = await db.TblExpenses
         .Include(x => x.Category)
         .Where(x => x.ExpenseId == id && !x.IsDelete)
-        .Select(x => new ExpenseDTO
+        .Select(x => new ExpenseResponseDTO
         {
             ExpenseId = x.ExpenseId,
             ExpenseDate = x.ExpenseDate,
