@@ -1,4 +1,5 @@
-﻿using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
         }
 
         [HttpPost("create-category")]
-        public async Task<IActionResult> AddCategory([FromBody] CategoryCreateModel model)
+        public async Task<IActionResult> AddCategory([FromBody] CategoryCreateRequestDTO model)
         {
             var category = new TblCategory
             {
@@ -29,26 +30,26 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             _context.TblCategories.Add(category);
             await _context.SaveChangesAsync();
 
-            var result = new CategoryDTO
+            var result = new CategoryResponseDTO
             {
                 CategoryId = category.CategoryId,
                 CategoryName = category.CategoryName,
                 Description = category.Description
             };
 
-            return Ok(result);
+            return Ok(new ResponseDTO<CategoryResponseDTO> { Data = result, Message = "Category created successfully." });
 
         }
 
         [HttpPut("update-category/{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryUpdateModel model)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryUpdateRequestDTO model)
         {
             var category = await _context.TblCategories
                 .FirstOrDefaultAsync(x => x.CategoryId == id && !x.IsDelete);
 
             if (category == null)
             {
-                return NotFound("Category not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Category not found." });
             }
 
             category.CategoryName = model.CategoryName;
@@ -56,14 +57,14 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             await _context.SaveChangesAsync();
 
-            var result = new CategoryDTO
+            var result = new CategoryResponseDTO
             {
                 CategoryId = category.CategoryId,
                 CategoryName = category.CategoryName,
                 Description = category.Description
             };
 
-            return Ok(result);
+            return Ok(new ResponseDTO<CategoryResponseDTO> { Data = result, Message = "Category updated successfully." });
         }
 
         [HttpDelete("delete-category/{id}")]
@@ -74,14 +75,14 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             if (category == null)
             {
-                return NotFound("Category not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Category not found." });
             }
 
             category.IsDelete = true;
 
             await _context.SaveChangesAsync();
 
-            return Ok("Category deleted successfully.");
+            return Ok(new ResponseDTO { Message = "Category deleted successfully." });
         }
 
         [HttpGet("list-categories")]
@@ -89,7 +90,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
         {
             var categories = await _context.TblCategories
                 .Where(x => !x.IsDelete)
-                .Select(x => new CategoryDTO
+                .Select(x => new CategoryResponseDTO
                 {
                     CategoryId = x.CategoryId,
                     CategoryName = x.CategoryName,
@@ -97,27 +98,27 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(categories);
+            return Ok(new ResponseDTO<List<CategoryResponseDTO>> { Data = categories, Message = "Categories retrieved successfully." });
         }
 
     }
 }
 
-public class CategoryCreateModel
+public class CategoryCreateRequestDTO
 {
     public string CategoryName { get; set; }
 
     public string? Description { get; set; }
 }
 
-public class CategoryUpdateModel
+public class CategoryUpdateRequestDTO
 {
     public string CategoryName { get; set; }
 
     public string? Description { get; set; }
 }
 
-public class CategoryDTO
+public class CategoryResponseDTO
 {
     public int CategoryId { get; set; }
 

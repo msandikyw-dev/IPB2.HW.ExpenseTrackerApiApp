@@ -1,4 +1,5 @@
-﻿using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
         }
 
         [HttpPost("create-budget")]
-        public async Task<IActionResult> CreateMonthlyBudget([FromBody] BudgetCreateDTO model)
+        public async Task<IActionResult> CreateMonthlyBudget([FromBody] BudgetCreateRequestDTO model)
         {
             var exists = await _context.TblBudgets
                 .AnyAsync(x => x.BudgetYear == model.BudgetYear &&
@@ -26,7 +27,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             if (exists)
             {
-                return BadRequest("Budget already exists for this month.");
+                return BadRequest(new ResponseDTO { IsSuccess = false, Message = "Budget already exists for this month." });
             }
 
             var budget = new TblBudget
@@ -40,18 +41,26 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             _context.TblBudgets.Add(budget);
             await _context.SaveChangesAsync();
 
-            return Ok(budget);
+            var result = new BudgetResponseDTO
+            {
+                BudgetId = budget.BudgetId,
+                BudgetYear = budget.BudgetYear,
+                BudgetMonth = budget.BudgetMonth,
+                BudgetAmount = budget.BudgetAmount
+            };
+
+            return Ok(new ResponseDTO<BudgetResponseDTO> { Data = result, Message = "Budget created successfully." });
         }
 
         [HttpPut("update-budget/{id}")]
-        public async Task<IActionResult> UpdateBudget(int id, [FromBody] BudgetUpdateDTO model)
+        public async Task<IActionResult> UpdateBudget(int id, [FromBody] BudgetUpdateRequestDTO model)
         {
             var budget = await _context.TblBudgets
                 .FirstOrDefaultAsync(x => x.BudgetId == id && !x.IsDelete);
 
             if (budget == null)
             {
-                return NotFound("Budget not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Budget not found." });
             }
 
             budget.BudgetYear = model.BudgetYear;
@@ -60,7 +69,15 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(budget);
+            var result = new BudgetResponseDTO
+            {
+                BudgetId = budget.BudgetId,
+                BudgetYear = budget.BudgetYear,
+                BudgetMonth = budget.BudgetMonth,
+                BudgetAmount = budget.BudgetAmount
+            };
+
+            return Ok(new ResponseDTO<BudgetResponseDTO> { Data = result, Message = "Budget updated successfully." });
         }
 
         [HttpDelete("delete-budget/{id}")]
@@ -71,14 +88,14 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             if (budget == null)
             {
-                return NotFound("Budget not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Budget not found." });
             }
 
             budget.IsDelete = true;
 
             await _context.SaveChangesAsync();
 
-            return Ok("Budget deleted successfully.");
+            return Ok(new ResponseDTO { Message = "Budget deleted successfully." });
         }
 
         [HttpGet("remaining-budget")]
@@ -92,7 +109,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             if (budget == null)
             {
-                return NotFound("Budget not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Budget not found for this month." });
             }
 
             var totalExpense = await _context.TblExpenses
@@ -102,7 +119,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             var remaining = budget.BudgetAmount - totalExpense;
 
-            var result = new BudgetRemainingDTO
+            var result = new BudgetRemainingResponseDTO
             {
                 BudgetYear = year,
                 BudgetMonth = month,
@@ -111,12 +128,12 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
                 RemainingBudget = remaining
             };
 
-            return Ok(null);
+            return Ok(new ResponseDTO<BudgetRemainingResponseDTO> { Data = result, Message = "Remaining budget retrieved successfully." });
         }
     }
 }
 
-public class BudgetCreateDTO
+public class BudgetCreateRequestDTO
 {
     public int BudgetYear { get; set; }
 
@@ -125,7 +142,7 @@ public class BudgetCreateDTO
     public decimal BudgetAmount { get; set; }
 }
 
-public class BudgetUpdateDTO
+public class BudgetUpdateRequestDTO
 {
     public int BudgetYear { get; set; }
 
@@ -134,7 +151,17 @@ public class BudgetUpdateDTO
     public decimal BudgetAmount { get; set; }
 }
 
-public class BudgetRemainingDTO
+public class BudgetResponseDTO
+{
+    public int BudgetId { get; set; }
+    public int BudgetYear { get; set; }
+
+    public int BudgetMonth { get; set; }
+
+    public decimal BudgetAmount { get; set; }
+}
+
+public class BudgetRemainingResponseDTO
 {
     public int BudgetYear { get; set; }
 
@@ -146,5 +173,3 @@ public class BudgetRemainingDTO
 
     public decimal RemainingBudget { get; set; }
 }
-
-

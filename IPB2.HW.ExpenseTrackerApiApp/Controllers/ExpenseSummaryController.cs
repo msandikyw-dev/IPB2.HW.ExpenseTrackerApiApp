@@ -1,4 +1,5 @@
-﻿using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,23 +16,6 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             _context = new AppDbContext();
         }
 
-        //[HttpGet("monthly-expenses")]
-        //public async Task<IActionResult> GetMonthlyExpenses(int year)
-        //{
-        //    var summary = await _context.TblExpenses
-        //        .Where(x => !x.IsDelete && x.ExpenseDate.Year == year)
-        //        .GroupBy(x => x.ExpenseDate.Month)
-        //        .Select(g => new ExpenseSummaryDTO
-        //        {
-        //            Period = $"{year}-{g.Key:D2}",  // e.g., "2026-03"
-        //            TotalExpense = g.Sum(x => x.Amount)
-        //        })
-        //        .OrderBy(x => x.Period)
-        //        .ToListAsync();
-
-        //    return Ok(summary);
-        //}
-
         [HttpGet("monthly-expenses")]
         public async Task<IActionResult> GetMonthlyExpenses(int year)
         {
@@ -46,7 +30,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
                 .ToListAsync();
 
             var summary = query
-                .Select(x => new
+                .Select(x => new ExpenseSummaryResponseDTO
                 {
                     Period = $"{year}-{x.Month:D2}",
                     TotalExpense = x.Total
@@ -54,7 +38,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
                 .OrderBy(x => x.Period)
                 .ToList();
 
-            return Ok(summary);
+            return Ok(new ResponseDTO<List<ExpenseSummaryResponseDTO>> { Data = summary, Message = "Monthly expenses retrieved successfully." });
         }
 
         [HttpGet("daily-expenses")]
@@ -73,7 +57,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
         .ToListAsync();               
 
         var dailySummary = query
-            .Select(x => new
+            .Select(x => new ExpenseSummaryResponseDTO
             {
                 Period = x.Date.ToString("yyyy-MM-dd"),
                 TotalExpense = x.Total
@@ -81,12 +65,12 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             .OrderBy(x => x.Period)
             .ToList();
 
-        return Ok(dailySummary);
+        return Ok(new ResponseDTO<List<ExpenseSummaryResponseDTO>> { Data = dailySummary, Message = "Daily expenses retrieved successfully." });
         }
     }
 }
 
-public class ExpenseSummaryDTO
+public class ExpenseSummaryResponseDTO
 {
     public string Period { get; set; }  // e.g., "2026-03" or "2026-W10" or "2026-03-12"
     public decimal TotalExpense { get; set; }

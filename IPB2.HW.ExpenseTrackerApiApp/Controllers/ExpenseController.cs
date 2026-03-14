@@ -1,4 +1,5 @@
-﻿using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Database.AppDbContextModels;
+using IPB2.HW.ExpenseTrackerApiApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
         }
 
         [HttpPost("create-expense")]
-        public async Task<IActionResult> AddExpense([FromBody] ExpenseCreateDTO model)
+        public async Task<IActionResult> AddExpense([FromBody] ExpenseCreateRequestDTO model)
         {
             var expense = new TblExpense
             {
@@ -31,7 +32,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             _context.TblExpenses.Add(expense);
             await _context.SaveChangesAsync();
 
-            var result = new ExpenseDTO
+            var result = new ExpenseResponseDTO
             {
                 ExpenseId = expense.ExpenseId,
                 ExpenseDate = expense.ExpenseDate,
@@ -41,18 +42,18 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
                 Description = expense.Description
             };
 
-            return Ok(result);
+            return Ok(new ResponseDTO<ExpenseResponseDTO> { Data = result, Message = "Expense created successfully." });
         }
 
         [HttpPut("update-expense/{id}")]
-        public async Task<IActionResult> UpdateExpense(int id, [FromBody] ExpenseUpdateDTO model)
+        public async Task<IActionResult> UpdateExpense(int id, [FromBody] ExpenseUpdateRequestDTO model)
         {
             var expense = await _context.TblExpenses
             .FirstOrDefaultAsync(x => x.ExpenseId == id && !x.IsDelete);
 
             if (expense == null)
             {
-                return NotFound("Expense not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Expense not found." });
             }
 
             expense.ExpenseDate = model.ExpenseDate;
@@ -62,7 +63,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok("Expense updated successfully.");
+            return Ok(new ResponseDTO { Message = "Expense updated successfully." });
         }
 
         [HttpDelete("delete-expense/{id}")]
@@ -73,14 +74,14 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             if (expense == null)
             {
-                return NotFound("Expense not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Expense not found." });
             }
 
             expense.IsDelete = true;
 
             await _context.SaveChangesAsync();
 
-            return Ok("Expense deleted successfully.");
+            return Ok(new ResponseDTO { Message = "Expense deleted successfully." });
         }
 
         [HttpGet("list-expenses")]
@@ -89,7 +90,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             var expenses = await _context.TblExpenses
             .Include(x => x.Category)
             .Where(x => !x.IsDelete)
-            .Select(x => new ExpenseDTO
+            .Select(x => new ExpenseResponseDTO
             {
                 ExpenseId = x.ExpenseId,
                 ExpenseDate = x.ExpenseDate,
@@ -100,7 +101,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             })
             .ToListAsync();
 
-            return Ok(expenses);
+            return Ok(new ResponseDTO<List<ExpenseResponseDTO>> { Data = expenses, Message = "Expenses retrieved successfully." });
         }
 
         [HttpGet("expense-details/{id}")]
@@ -109,7 +110,7 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
             var expense = await _context.TblExpenses
            .Include(x => x.Category)
            .Where(x => x.ExpenseId == id && !x.IsDelete) 
-           .Select(x => new ExpenseDTO
+           .Select(x => new ExpenseResponseDTO
            {
                ExpenseId = x.ExpenseId,
                ExpenseDate = x.ExpenseDate,
@@ -122,16 +123,16 @@ namespace IPB2.HW.ExpenseTrackerApiApp.Controllers
 
             if (expense == null)
             {
-                return NotFound("Expense not found.");
+                return NotFound(new ResponseDTO { IsSuccess = false, Message = "Expense not found." });
             }
 
-            return Ok(expense);
+            return Ok(new ResponseDTO<ExpenseResponseDTO> { Data = expense, Message = "Expense details retrieved successfully." });
         }
 
     }
 }
 
-public class ExpenseCreateDTO
+public class ExpenseCreateRequestDTO
 {
     public DateTime ExpenseDate { get; set; }
 
@@ -142,7 +143,7 @@ public class ExpenseCreateDTO
     public string? Description { get; set; }
 }
 
-public class ExpenseUpdateDTO
+public class ExpenseUpdateRequestDTO
 {
     public DateTime ExpenseDate { get; set; }
 
@@ -153,7 +154,7 @@ public class ExpenseUpdateDTO
     public string? Description { get; set; }
 }
 
-public class ExpenseDTO
+public class ExpenseResponseDTO
 {
     public int ExpenseId { get; set; }
 
